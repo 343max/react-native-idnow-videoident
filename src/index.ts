@@ -1,16 +1,31 @@
-export { IdnowManager } from './IdnowManager';
-export type { IIdentificationErrorResult, IIdentificationResult, TOnError, TOnSuccess } from './model/common';
-export { AndroidLanguageEnum } from './model/enums/android/AndroidLanguageEnum';
-export { ConnectionTypeEnum } from './model/enums/ConnectionTypeEnum';
-export { EnvironmentEnum } from './model/enums/EnvironmentEnum';
-export { IosAppearanceModeEnum } from './model/enums/ios/IosAppearanceModeEnum';
-export { IosCheckboxPositionEnum } from './model/enums/ios/IosCheckboxPositionEnum';
-export { IosLanguageEnum } from './model/enums/ios/IosLanguageEnum';
-export { IosNumberLabelPositionEnum } from './model/enums/ios/IosNumberLabelPositionEnum';
-export { IosRequestCodeAgainLayoutTypeEnum } from './model/enums/ios/IosRequestCodeAgainLayoutTypeEnum';
-export { IosUIModalPresentationStyleEnum } from './model/enums/ios/IosUIModalPresentationStyleEnum';
-export { ResultCodeEnum } from './model/enums/ResultCodeEnum';
-export type { IAppearance } from './model/interfaces/IAppearance';
-export type { ICallbacks } from './model/interfaces/ICallbacks';
-export type { IColors } from './model/interfaces/IColors';
-export type { ISettings } from './model/interfaces/ISettings';
+import type { Subscription } from 'expo-modules-core';
+import { EventEmitter, NativeModulesProxy } from 'expo-modules-core';
+
+// Import the native module. On web, it will be resolved to TokenstreetReactNativeIdnowVideoident.web.ts
+// and on native platforms to TokenstreetReactNativeIdnowVideoident.ts
+import {
+    ChangeEventPayload,
+    TokenstreetReactNativeIdnowVideoidentViewProps,
+} from './TokenstreetReactNativeIdnowVideoident.types';
+import TokenstreetReactNativeIdnowVideoidentModule from './TokenstreetReactNativeIdnowVideoidentModule';
+
+// Get the native constant value.
+export const { PI } = TokenstreetReactNativeIdnowVideoidentModule;
+
+export function hello(): string {
+    return TokenstreetReactNativeIdnowVideoidentModule.hello();
+}
+
+export async function setValueAsync(value: string) {
+    return await TokenstreetReactNativeIdnowVideoidentModule.setValueAsync(value);
+}
+
+const emitter = new EventEmitter(
+    TokenstreetReactNativeIdnowVideoidentModule ?? NativeModulesProxy.TokenstreetReactNativeIdnowVideoident
+);
+
+export function addChangeListener(listener: (event: ChangeEventPayload) => void): Subscription {
+    return emitter.addListener<ChangeEventPayload>('onChange', listener);
+}
+
+export { ChangeEventPayload, TokenstreetReactNativeIdnowVideoidentViewProps };

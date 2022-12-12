@@ -1,74 +1,92 @@
-buildscript {
-    if (project == rootProject) {
-        repositories {
-            google()
-            mavenCentral()
-        }
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'maven-publish'
 
-        dependencies {
-            classpath 'com.android.tools.build:gradle:7.3.1'
-        }
+group = 'expo.modules.tokenstreetreactnativeidnowvideoident'
+version = '0.1.0'
+
+buildscript {
+  def expoModulesCorePlugin = new File(project(":expo-modules-core").projectDir.absolutePath, "ExpoModulesCorePlugin.gradle")
+  if (expoModulesCorePlugin.exists()) {
+    apply from: expoModulesCorePlugin
+    applyKotlinExpoModulesCorePlugin()
+  }
+
+  // Simple helper that allows the root project to override versions declared by this library.
+  ext.safeExtGet = { prop, fallback ->
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+  }
+
+  // Ensures backward compatibility
+  ext.getKotlinVersion = {
+    if (ext.has("kotlinVersion")) {
+      ext.kotlinVersion()
+    } else {
+      ext.safeExtGet("kotlinVersion", "1.6.10")
     }
+  }
+
+  repositories {
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${getKotlinVersion()}")
+  }
 }
 
-apply plugin: 'com.android.library'
+// Creating sources with comments
+task androidSourcesJar(type: Jar) {
+  classifier = 'sources'
+  from android.sourceSets.main.java.srcDirs
+}
 
-def safeExtGet(prop, fallback) {
-    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+afterEvaluate {
+  publishing {
+    publications {
+      release(MavenPublication) {
+        from components.release
+        // Add additional sourcesJar to artifacts
+        artifact(androidSourcesJar)
+      }
+    }
+    repositories {
+      maven {
+        url = mavenLocal().url
+      }
+    }
+  }
 }
 
 android {
-    compileSdkVersion safeExtGet('ReactNativeIdnowVideoident_compileSdkVersion', 31)
-    defaultConfig {
-        minSdkVersion safeExtGet('ReactNativeIdnowVideoident_minSdkVersion', 21)
-        targetSdkVersion safeExtGet('ReactNativeIdnowVideoident_targetSdkVersion', 31)
-        versionCode 1
-        versionName "1.0"
+  compileSdkVersion safeExtGet("compileSdkVersion", 31)
 
-        consumerProguardFiles 'proguard-rules.pro'
-    }
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_11
+    targetCompatibility JavaVersion.VERSION_11
+  }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-        }
-    }
-    lintOptions {
-        disable 'GradleCompatible'
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
-    }
+  kotlinOptions {
+    jvmTarget = JavaVersion.VERSION_11.majorVersion
+  }
+
+  defaultConfig {
+    minSdkVersion safeExtGet("minSdkVersion", 21)
+    targetSdkVersion safeExtGet("targetSdkVersion", 31)
+    versionCode 1
+    versionName "0.1.0"
+    consumerProguardFiles 'proguard-rules.pro'
+  }
+  lintOptions {
+    abortOnError false
+  }
 }
 
 repositories {
-    mavenLocal()
-    maven {
-        // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-        url("$rootDir/../node_modules/react-native/android")
-    }
-    google()
-    mavenCentral()
-    jcenter() {
-        // JCenter is now read-only. Therefore, no new versions are published there any more.
-        // We only fetch the necessary dependencies for IDnow from JCenter to avoid loading old dependencies.
-        content {
-            includeModule("me.relex", "circleindicator")
-            includeModule("com.github.barteksc", "android-pdf-viewer")
-        }
-    }
-    maven() {
-        url "https://raw.githubusercontent.com/idnow/de.idnow.android/master"
-        content {
-            includeModule("de.idnow.sdk", "idnow-android-sdk")
-            includeModule("de.idnow.insights", "idnow-android-insights-sdk")
-        }
-    }
+  mavenCentral()
 }
 
 dependencies {
-    //noinspection GradleDynamicVersion
-    implementation "com.facebook.react:react-native:+"  // From node_modules
-    implementation "de.idnow.sdk:idnow-android-sdk:6.1.2"
+  implementation project(':expo-modules-core')
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${getKotlinVersion()}"
 }

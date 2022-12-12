@@ -1,0 +1,10 @@
+{
+    "extends": "expo/tsconfig.base",
+    "compilerOptions": {
+        "strict": true,
+        "paths": {
+            "@tokenstreet/react-native-idnow-videoident": ["../src/index"],
+            "@tokenstreet/react-native-idnow-videoident/*": ["../src/*"]
+        }
+    }
+}
